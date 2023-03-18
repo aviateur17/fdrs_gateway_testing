@@ -1,4 +1,4 @@
-#ifdef USE_WIFI
+
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
@@ -63,7 +63,7 @@ void reconnect_mqtt(short int attempts, bool silent)
     for (short int i = 1; i <= attempts; i++)
     {
         // Attempt to connect
-        if (client.connect("FDRS_GATEWAY_368170", mqtt_user, mqtt_pass))
+        if (client.connect("FDRS_GATEWAY54", mqtt_user, mqtt_pass))
         {
             // Subscribe
             client.subscribe(TOPIC_COMMAND);
@@ -168,13 +168,12 @@ void mqtt_publish(const char *payload)
 #endif
     }
 }
-#endif // USE_WIFI
 
 void sendMQTT()
 {
-#ifdef USE_WIFI
     DBG("Sending MQTT.");
     DynamicJsonDocument doc(24576);
+    // String outgoingString;
     for (int i = 0; i < ln; i++)
     {
         doc[i]["id"] = theData[i].id;
@@ -182,8 +181,7 @@ void sendMQTT()
         doc[i]["data"] = theData[i].d;
         doc[i]["time"] = time(nullptr);
     }
-    String outgoingString;
-    serializeJson(doc, outgoingString);
-    mqtt_publish((char *)outgoingString.c_str());
-#endif // USE_WIFI
+    char mqtt_payload[measureJson(doc) + 1];
+    serializeJson(doc, mqtt_payload, sizeof(mqtt_payload));
+    mqtt_publish(mqtt_payload);
 }

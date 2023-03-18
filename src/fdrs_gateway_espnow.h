@@ -15,7 +15,7 @@ const uint8_t espnow_size = 250 / sizeof(DataReading);
 esp_now_peer_info_t peerInfo;
 #endif
 
-uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+const uint8_t broadcast_mac[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 const uint8_t mac_prefix[] = {MAC_PREFIX};
 uint8_t selfAddress[] = {MAC_PREFIX, UNIT_MAC};
@@ -25,7 +25,7 @@ uint8_t ESPNOW1[] = {MAC_PREFIX, ESPNOW_NEIGHBOR_1};
 uint8_t ESPNOW2[] = {MAC_PREFIX, ESPNOW_NEIGHBOR_2};
 extern time_t now;
 
-#ifdef USE_ESPNOW
+
 // Set ESP-NOW send and receive callbacks for either ESP8266 or ESP32
 #if defined(ESP8266)
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus)
@@ -63,11 +63,9 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   }
   newData = event_espnowg;
 }
-#endif // USE_ESPNOW
 
 void begin_espnow()
 {
-#ifdef USE_ESPNOW
   DBG("Initializing ESP-NOW!");
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
@@ -111,10 +109,7 @@ void begin_espnow()
   }
 #endif // ESP8266
   DBG(" ESP-NOW Initialized.");
-#endif // USE_ESPNOW
 }
-
-#ifdef USE_ESPNOW
 
 // Returns an expired entry in peer_list, -1 if full.
 int find_espnow_peer()
@@ -200,8 +195,6 @@ void add_espnow_peer()
   }
 }
 
-#endif // USE_ESPNOW
-
 // Lower level function meant to be called by other functions 
 // Sends SystemPacket via ESP-NOW
 esp_err_t sendESPNow(uint8_t *dest, SystemPacket *data) {
@@ -262,6 +255,8 @@ esp_err_t sendTimeESPNow() {
   result2 = sendESPNow(ESPNOW2, &sys_packet);
   result3 = sendESPNow(nullptr, &sys_packet);
 
+  DBG("Time Send Result: " + String(esp_err_to_name(result1)) + " | " + String(esp_err_to_name(result2)) + " | " + String(esp_err_to_name(result3)));
+
   if(result1 != ESP_OK || result2 != ESP_OK || result3 != ESP_OK){
     return ESP_FAIL;
   }
@@ -302,12 +297,10 @@ esp_err_t sendESPNow(uint8_t *dest, DataReading *data) {
     }
   }
 #endif // ESP32
-    int i = 0;
-    while(ln > 0) {
+    for(int i = 0; i < ln; ) {
       if(ln > espnow_size) {
         sendResult = esp_now_send(dest, (uint8_t *)&data[i], espnow_size * sizeof(DataReading));
         if(sendResult == ESP_OK) {
-          ln -= espnow_size;
           i += espnow_size;
         }
         else {
@@ -373,4 +366,11 @@ esp_err_t sendESPNowTempPeer(uint8_t *dest) {
   result = sendESPNow(dest, theData);
   esp_now_del_peer(dest);
   return result;
+}
+
+void recvTimeEspNow() {
+  time_t previousTime = now;
+  now = theCmd.param;
+  setTime(previousTime); 
+  DBG("Received time via ESP-NOW from 0x" + String(incMAC[5],HEX));
 }

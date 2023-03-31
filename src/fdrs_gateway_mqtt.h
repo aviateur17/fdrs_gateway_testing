@@ -41,6 +41,8 @@
 #define FDRS_MQTT_AUTH
 #endif // MQTT_AUTH
 
+#define MQTT_MAX_BUFF_SIZE 1024
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -140,6 +142,7 @@ void mqtt_callback(char *topic, byte *message, unsigned int length)
 void begin_mqtt()
 {
     client.setServer(mqtt_server, mqtt_port);
+    client.setBufferSize(MQTT_MAX_BUFF_SIZE);
     if (!client.connected())
     {
         reconnect_mqtt(5);
@@ -173,7 +176,6 @@ void sendMQTT()
 {
     DBG("Sending MQTT.");
     DynamicJsonDocument doc(24576);
-    // String outgoingString;
     for (int i = 0; i < ln; i++)
     {
         doc[i]["id"] = theData[i].id;

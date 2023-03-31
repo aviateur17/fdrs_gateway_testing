@@ -43,6 +43,7 @@
 #define LORA_SPI_MOSI 23
 
 #define FDRS_DEBUG     // Enable USB-Serial debugging
+// #define DEBUG_CONFIG
 
 // OLED -- Displays console debugging messages on an SSD1306 I²C OLED
 #define USE_OLED    
@@ -78,6 +79,8 @@
 // #define MQTT_PASS   "iot123!"
 
 // NTP Time settings
+#define USDST
+// #define EUDST
 #define TIME_SERVER       "0.us.pool.ntp.org"       // NTP time server to use. If FQDN at least one DNS server is required to resolve name
 #define STD_OFFSET      (-6)                // Local standard time offset in hours from UTC - if unsure, check https://time.is
 #define DST_OFFSET      (STD_OFFSET + 1)    // Local savings time offset in hours from UTC - if unsure, check https://time.is

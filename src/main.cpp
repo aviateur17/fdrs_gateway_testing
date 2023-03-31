@@ -12,7 +12,7 @@
 time_t lastRunTime = 0;
 
 void setup() {
-beginFDRS();
+    beginFDRS();
 }
 
 void loop() {

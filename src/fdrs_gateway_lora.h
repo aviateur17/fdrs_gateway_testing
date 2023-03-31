@@ -76,9 +76,9 @@ const uint8_t lora_size = 256 / sizeof(DataReading);
 
 #ifdef CUSTOM_SPI
 #ifdef ESP32
-SPIClass SPI1(HSPI);
+// SPIClass SPI1(HSPI);
 #endif  // ESP32
-RADIOLIB_MODULE radio = new Module(LORA_SS, LORA_DIO, LORA_RST, LORA_BUSY, SPI1);
+RADIOLIB_MODULE radio = new Module(LORA_SS, LORA_DIO, LORA_RST, LORA_BUSY, SPI);
 #else
 RADIOLIB_MODULE radio = new Module(LORA_SS, LORA_DIO, LORA_RST, LORA_BUSY);
 #endif  // CUSTOM_SPI
@@ -284,7 +284,7 @@ void begin_lora()
 {
 #ifdef CUSTOM_SPI
 #ifdef ESP32
-  SPI1.begin(LORA_SPI_SCK, LORA_SPI_MISO, LORA_SPI_MOSI);
+  SPI.begin(LORA_SPI_SCK, LORA_SPI_MISO, LORA_SPI_MOSI);
 #endif  // ESP32
 #ifdef ARDUINO_ARCH_RP2040
   SPI1.setRX(LORA_SPI_MISO);
@@ -664,10 +664,15 @@ void sendTimeLoRa() {
   DBG("Sending time via LoRa");
   SystemPacket spTimeLoRa = {.cmd = cmd_time, .param = now};
   transmitLoRa(&loraBroadcast, &spTimeLoRa, 1);
-  spTimeLoRa.param = now;
-  // add LoRa neighbor 1
-  transmitLoRa(&LoRa1, &spTimeLoRa, 1);
-  spTimeLoRa.param = now;
-  // add LoRa neighbor 2
-  transmitLoRa(&LoRa2, &spTimeLoRa, 1);
+  // Do not send to LoRa peers if their address is 0x..00
+  if((LoRa1 & 0x00FF) != 0x0000) {
+    spTimeLoRa.param = now;
+    // add LoRa neighbor 1
+    transmitLoRa(&LoRa1, &spTimeLoRa, 1);
+  }
+  if((LoRa2 & 0x00FF) != 0x0000) {
+    spTimeLoRa.param = now;
+    // add LoRa neighbor 2
+    transmitLoRa(&LoRa2, &spTimeLoRa, 1);
+  }
 }

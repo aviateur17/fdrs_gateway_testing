@@ -6,6 +6,8 @@
 #define UART_IF Serial
 #endif
 
+extern time_t now;
+
 void getSerial() {
   String incomingString;
 
@@ -15,7 +17,6 @@ void getSerial() {
   else if (Serial.available()){
    incomingString =  Serial.readStringUntil('\n');
   }
-  // DBG(incomingString);
   DynamicJsonDocument doc(24576);
   DeserializationError error = deserializeJson(doc, incomingString);
   if (error) {    // Test if parsing succeeds.
@@ -23,25 +24,23 @@ void getSerial() {
     //    DBG(incomingString);
     return;
   } else {
-    // serializeJson(doc, Serial);
-    // Serial.println();
     int s = doc.size();
     JsonObject obj = doc[0].as<JsonObject>();
     if(obj.containsKey("type")) { // DataReading
-      //UART_IF.println(s);
-      for (int i = 0; i < s; i++) {
-        theData[i].id = doc[i]["id"];
-        theData[i].t = doc[i]["type"];
-        theData[i].d = doc[i]["data"];  
+    //UART_IF.println(s);
+    for (int i = 0; i < s; i++) {
+      theData[i].id = doc[i]["id"];
+      theData[i].t = doc[i]["type"];
+      theData[i].d = doc[i]["data"];
       }
-      ln = s;
+    ln = s;
       newData = event_serial;
       DBG("Incoming Serial: DR");
     }
     else if(obj.containsKey("cmd")) { // SystemPacket
       cmd_t c = doc[0]["cmd"];
       if(c == cmd_time) {
-        setTime(doc[0]["param"]);
+        setTime(doc[0]["param"]); 
         DBG("Incoming Serial: time");
       }
       else {

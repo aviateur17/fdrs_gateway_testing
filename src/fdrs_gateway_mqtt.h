@@ -1,4 +1,3 @@
-
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
@@ -65,7 +64,7 @@ void reconnect_mqtt(short int attempts, bool silent)
     for (short int i = 1; i <= attempts; i++)
     {
         // Attempt to connect
-        if (client.connect("FDRS_GATEWAY54", mqtt_user, mqtt_pass))
+        if (client.connect("FDRS_GATEWAY", mqtt_user, mqtt_pass))
         {
             // Subscribe
             client.subscribe(TOPIC_COMMAND);
@@ -155,7 +154,7 @@ void mqtt_publish(const char *payload)
     if (!client.publish(TOPIC_DATA, payload))
     {
         DBG(" Error on sending MQTT");
-#if defined(USE_SD_LOG) || defined(USE_FS_LOG)    
+#if defined(USE_SD_LOG) || defined(USE_FS_LOG)
         sendLog();
 #endif
     }
